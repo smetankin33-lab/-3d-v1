@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Заявка принята — {{ req.ticket_number }}{% endblock %}
+{% block extra_css %}
+<style>
+.success-wrap {
+    max-width: 600px;
+    margin: 4rem auto;
+    padding: 0 1.5rem;
+    text-align: center;
+}
+.success-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.1);} }
+.success-wrap h1 { font-size: 2rem; font-weight: 900; margin-bottom: 0.5rem; }
+.success-wrap p { color: var(--text-dim); margin-bottom: 2rem; }
+.ticket-box {
+    background: var(--surface);
+    border: 1px solid rgba(0,212,255,0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 0 30px rgba(0,212,255,0.08);
+}
+.ticket-label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+.ticket-number {
+    font-family: var(--mono);
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+}
+.actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="success-wrap">
+    <div class="success-icon">✅</div>
+    <h1>Заявка принята!</h1>
+    <p>Мы получили вашу заявку и скоро приступим к её обработке.<br>Сохраните номер заявки для отслеживания.</p>
+    <div class="ticket-box">
+        <div class="ticket-label">Номер вашей заявки</div>
+        <div class="ticket-number">{{ req.ticket_number }}</div>
+    </div>
+    <div class="actions">
+        <a href="/track?ticket={{ req.ticket_number }}" class="btn btn-primary">Отследить статус</a>
+        <a href="/" class="btn btn-ghost">Новая заявка</a>
+    </div>
+</div>
+{% endblock %}

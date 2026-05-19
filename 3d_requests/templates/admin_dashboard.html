@@ -1,0 +1,88 @@
+{% extends 'admin_base.html' %}
+{% block title %}Панель управления{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Заявки</h1>
+    <div class="header-actions">
+        <a href="/" target="_blank" class="btn btn-ghost" style="font-size:0.85rem;">↗ Сайт</a>
+    </div>
+</div>
+
+<!-- Статистика -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-num">{{ stats.total }}</div>
+        <div class="stat-label">Всего заявок</div>
+    </div>
+    <div class="stat-card" style="border-color: rgba(108,99,255,0.3);">
+        <div class="stat-num" style="color:#6C63FF;">{{ stats.new }}</div>
+        <div class="stat-label">Новых</div>
+    </div>
+    <div class="stat-card" style="border-color: rgba(245,158,11,0.3);">
+        <div class="stat-num" style="color:#F59E0B;">{{ stats.in_progress }}</div>
+        <div class="stat-label">В работе</div>
+    </div>
+    <div class="stat-card" style="border-color: rgba(16,185,129,0.3);">
+        <div class="stat-num" style="color:#10B981;">{{ stats.done }}</div>
+        <div class="stat-label">Выполнено</div>
+    </div>
+</div>
+
+<!-- Фильтры статусов -->
+<div class="filter-row">
+    <a href="/admin" class="filter-btn {% if not status_filter %}active{% endif %}">Все</a>
+    {% for status, color in status_colors.items() %}
+    <a href="/admin?status={{ status }}" class="filter-btn {% if status_filter == status %}active{% endif %}"
+       style="{% if status_filter == status %}background:{{ color }}22;border-color:{{ color }}55;color:{{ color }};{% endif %}">
+        {{ status }}
+    </a>
+    {% endfor %}
+</div>
+
+<!-- Таблица заявок -->
+{% if requests %}
+<div class="table-wrap">
+<table class="req-table">
+    <thead>
+        <tr>
+            <th>Номер</th>
+            <th>Клиент</th>
+            <th>Телефон</th>
+            <th>Материал</th>
+            <th>Кол-во</th>
+            <th>Дата</th>
+            <th>Статус</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for r in requests %}
+    <tr>
+        <td><span class="ticket-mono">{{ r.ticket_number }}</span></td>
+        <td>{{ r.last_name }} {{ r.first_name }}</td>
+        <td>{{ r.phone }}</td>
+        <td>{{ r.material or '—' }}</td>
+        <td>{{ r.quantity }}</td>
+        <td class="date-cell">{{ r.created_at.strftime('%d.%m.%Y') }}<br>
+            <small>{{ r.created_at.strftime('%H:%M') }}</small></td>
+        <td>
+            <span class="badge" style="background:{{ status_colors.get(r.status,'#666') }}22;color:{{ status_colors.get(r.status,'#aaa') }};border:1px solid {{ status_colors.get(r.status,'#666') }}44;">
+                {{ r.status }}
+            </span>
+        </td>
+        <td>
+            <a href="/admin/request/{{ r.id }}" class="btn btn-ghost" style="padding:0.3rem 0.8rem;font-size:0.8rem;">Открыть</a>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<div class="empty-state">
+    <div style="font-size:3rem;margin-bottom:1rem;">📭</div>
+    <h3>Заявок нет</h3>
+    <p>{{ 'Нет заявок со статусом «' + status_filter + '»' if status_filter else 'Заявок пока нет' }}</p>
+</div>
+{% endif %}
+{% endblock %}

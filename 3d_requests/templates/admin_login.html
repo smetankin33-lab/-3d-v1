@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход — Администратор</title>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0A0B0F; --surface: #111318; --border: #252A35;
+            --accent: #00D4FF; --accent2: #7C3AED;
+            --text: #E8EDF5; --text-dim: #8892A4;
+            --danger: #EF4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+        .login-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+            z-index: 1;
+        }
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent2), var(--accent));
+            border-radius: 16px 16px 0 0;
+        }
+        .login-logo {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.3rem;
+        }
+        .login-logo span { color: var(--accent); }
+        .login-subtitle { text-align: center; color: var(--text-dim); font-size: 0.85rem; margin-bottom: 2rem; }
+        .field { margin-bottom: 1rem; }
+        .field label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-dim); margin-bottom: 0.4rem; letter-spacing: 0.05em; }
+        .field input {
+            width: 100%;
+            background: #0d0e13;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border 0.2s;
+        }
+        .field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,212,255,0.1); }
+        .flash { padding: 0.7rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem; font-weight: 600; }
+        .flash.error { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #FCA5A5; }
+        .btn-login {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent2), var(--accent));
+            color: white;
+            border: none;
+            padding: 0.9rem;
+            border-radius: 10px;
+            font-family: 'Exo 2', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 0.5rem;
+            box-shadow: 0 0 20px rgba(0,212,255,0.2);
+        }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(0,212,255,0.35); }
+        .lock-icon { text-align: center; font-size: 2.5rem; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+<div class="login-card">
+    <div class="lock-icon">🔐</div>
+    <div class="login-logo">◈ <span>3D</span>PRINT</div>
+    <div class="login-subtitle">Панель администратора</div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+            <div class="flash {{ cat }}">{{ msg }}</div>
+        {% endfor %}
+    {% endwith %}
+    <form method="POST">
+        <div class="field">
+            <label>ЛОГИН</label>
+            <input type="text" name="username" autocomplete="username" required autofocus>
+        </div>
+        <div class="field">
+            <label>ПАРОЛЬ</label>
+            <input type="password" name="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn-login">Войти в систему</button>
+    </form>
+</div>
+</body>
+</html>

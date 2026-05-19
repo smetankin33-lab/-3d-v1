@@ -1,0 +1,366 @@
+{% extends 'base.html' %}
+{% block title %}Заявка на 3D Печать{% endblock %}
+{% block extra_css %}
+<style>
+.hero {
+    text-align: center;
+    padding: 4rem 2rem 2rem;
+}
+.hero-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.2);
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.1em;
+}
+.hero h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.8rem;
+}
+.hero h1 .glow {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.hero p { color: var(--text-dim); font-size: 1rem; max-width: 520px; margin: 0 auto; }
+
+.form-wrapper {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1.5rem 4rem;
+}
+.form-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+.form-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+}
+.section-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-family: var(--mono);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.field-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+.field-full { grid-column: 1 / -1; }
+.field { display: flex; flex-direction: column; gap: 0.4rem; }
+.field label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+}
+.field label .req { color: var(--danger); margin-left: 2px; }
+.field input, .field select, .field textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.65rem 1rem;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    outline: none;
+    width: 100%;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,212,255,0.1);
+}
+.field textarea { resize: vertical; min-height: 100px; }
+.field select { cursor: pointer; }
+
+/* Dimensions */
+.dim-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.8rem; }
+.dim-input-wrap { position: relative; }
+.dim-input-wrap input { padding-right: 2.5rem; }
+.dim-unit {
+    position: absolute;
+    right: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    pointer-events: none;
+}
+
+/* File upload */
+.upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+.upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(0,212,255,0.04);
+}
+.upload-zone input[type=file] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+}
+.upload-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+.upload-zone h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.3rem; }
+.upload-zone p { font-size: 0.8rem; color: var(--text-dim); }
+.upload-zone .file-list { margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+.file-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.75rem;
+    font-family: var(--mono);
+    color: var(--accent);
+}
+
+/* Privacy notice */
+.privacy-notice {
+    background: rgba(124,58,237,0.08);
+    border: 1px solid rgba(124,58,237,0.2);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+}
+.privacy-notice strong { color: var(--text); }
+
+.submit-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+.btn-submit {
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    color: white;
+    border: none;
+    padding: 0.9rem 2.5rem;
+    border-radius: 10px;
+    font-family: var(--font);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 0 30px rgba(0,212,255,0.2);
+    letter-spacing: 0.04em;
+}
+.btn-submit:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(0,212,255,0.35); }
+
+@media (max-width: 600px) {
+    .field-grid, .field-grid.three, .dim-group { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="hero">
+    <div class="hero-tag">▲ СЕРВИС ЗАЯВОК</div>
+    <h1>Создание заявки <span class="glow">3D Печать</span></h1>
+    <p>Заполните форму и мы изготовим вашу деталь</p>
+</div>
+
+<div class="form-wrapper">
+<form method="POST" action="/submit" enctype="multipart/form-data" id="mainForm">
+
+    <!-- Личные данные -->
+    <div class="form-section">
+        <div class="section-title">01 / Контактные данные</div>
+        <div class="field-grid">
+            <div class="field">
+                <label>Фамилия <span class="req">*</span></label>
+                <input type="text" name="last_name" placeholder="Иванов" required maxlength="100">
+            </div>
+            <div class="field">
+                <label>Имя <span class="req">*</span></label>
+                <input type="text" name="first_name" placeholder="Иван" required maxlength="100">
+            </div>
+            <div class="field field-full">
+                <label>Номер телефона <span class="req">*</span></label>
+                <input type="tel" name="phone" placeholder="+7 (999) 123-45-67" required maxlength="20" id="phoneInput">
+            </div>
+        </div>
+    </div>
+
+    <!-- Параметры детали -->
+    <div class="form-section">
+        <div class="section-title">02 / Параметры детали</div>
+        <div class="field-grid">
+            <div class="field field-full">
+                <label>Размеры детали (мм)</label>
+                <div class="dim-group">
+                    <div class="dim-input-wrap">
+                        <input type="number" name="length" placeholder="Длина" min="0" step="0.1">
+                        <span class="dim-unit">мм</span>
+                    </div>
+                    <div class="dim-input-wrap">
+                        <input type="number" name="width" placeholder="Ширина" min="0" step="0.1">
+                        <span class="dim-unit">мм</span>
+                    </div>
+                    <div class="dim-input-wrap">
+                        <input type="number" name="height" placeholder="Высота" min="0" step="0.1">
+                        <span class="dim-unit">мм</span>
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <label>Материал</label>
+                <select name="material">
+                    <option value="">— выберите —</option>
+                    <option>ABS</option>
+                    <option>ASA</option>
+                    <option>Carbon</option>
+                    <option>ESD-Safe</option>
+                    <option>Fiberglass-Filled</option>
+                    <option>HIPS</option>
+                    <option>PA</option>
+                    <option>PA/CF</option>
+                    <option>PC</option>
+                    <option>PEEK</option>
+                    <option>PETG</option>
+                    <option>PLA</option>
+                    <option>PPSU</option>
+                    <option>TPU</option>
+                    <option>ULTEM</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label>Количество штук</label>
+                <input type="number" name="quantity" value="1" min="1" max="9999">
+            </div>
+            <div class="field field-full">
+                <label>Описание / комментарий</label>
+                <textarea name="description" placeholder="Дополнительные требования, назначение детали, особые пожелания..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- Файлы -->
+    <div class="form-section">
+        <div class="section-title">03 / Файлы</div>
+        <div class="field-grid">
+            <div class="field">
+                <label>3D Модели</label>
+                <div class="upload-zone" id="modelZone">
+                    <input type="file" name="models" multiple accept=".stl,.obj,.fbx,.3mf,.step,.stp" id="modelInput">
+                    <div class="upload-icon">⬡</div>
+                    <h4>STL, OBJ, FBX, 3MF, STEP</h4>
+                    <p>Перетащите файлы или нажмите</p>
+                    <div class="file-list" id="modelList"></div>
+                </div>
+            </div>
+            <div class="field">
+                <label>Фотографии / эскизы</label>
+                <div class="upload-zone" id="photoZone">
+                    <input type="file" name="photos" multiple accept="image/*" id="photoInput">
+                    <div class="upload-icon">◫</div>
+                    <h4>JPG, PNG, GIF, WEBP</h4>
+                    <p>Перетащите файлы или нажмите</p>
+                    <div class="file-list" id="photoList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Защита данных -->
+    <div class="privacy-notice">
+        <span>🔒</span>
+        <div>
+            <strong>Защита персональных данных.</strong>
+            Ваши данные (ФИО, телефон) хранятся в зашифрованном виде и используются исключительно для обработки заявки.
+            Доступ к полным данным имеет только авторизованный персонал. Номер телефона отображается в маскированном виде при публичном отслеживании заявки.
+        </div>
+    </div>
+
+    <div class="submit-row" style="margin-top:1.5rem;">
+        <button type="submit" class="btn-submit">Отправить заявку →</button>
+    </div>
+</form>
+</div>
+
+<script>
+// Маска телефона
+document.getElementById('phoneInput').addEventListener('input', function(e) {
+    let v = e.target.value.replace(/\D/g, '');
+    if (v.length > 11) v = v.slice(0, 11);
+    if (v.startsWith('8')) v = '7' + v.slice(1);
+    if (v.startsWith('7') && v.length > 0) {
+        let m = '+7';
+        if (v.length > 1) m += ' (' + v.slice(1, 4);
+        if (v.length >= 4) m += ') ' + v.slice(4, 7);
+        if (v.length >= 7) m += '-' + v.slice(7, 9);
+        if (v.length >= 9) m += '-' + v.slice(9, 11);
+        e.target.value = m;
+    }
+});
+
+// Drag & drop + file names
+function setupUpload(inputId, listId, zoneId) {
+    const input = document.getElementById(inputId);
+    const list = document.getElementById(listId);
+    const zone = document.getElementById(zoneId);
+
+    function updateList() {
+        list.innerHTML = '';
+        Array.from(input.files).forEach(f => {
+            const chip = document.createElement('span');
+            chip.className = 'file-chip';
+            chip.textContent = f.name;
+            list.appendChild(chip);
+        });
+    }
+    input.addEventListener('change', updateList);
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.classList.remove('dragover');
+        input.files = e.dataTransfer.files;
+        updateList();
+    });
+}
+setupUpload('modelInput', 'modelList', 'modelZone');
+setupUpload('photoInput', 'photoList', 'photoZone');
+</script>
+{% endblock %}

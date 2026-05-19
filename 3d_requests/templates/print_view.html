@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Заявка {{ req.ticket_number }} — Печать</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Exo 2', sans-serif; color: #111; background: #fff; padding: 20mm; max-width: 210mm; margin: 0 auto; }
+        .print-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8mm; padding-bottom: 5mm; border-bottom: 2px solid #111; }
+        .print-logo { font-size: 1.6rem; font-weight: 900; }
+        .print-logo span { color: #7C3AED; }
+        .print-meta { text-align: right; }
+        .print-ticket { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; color: #7C3AED; }
+        .print-date { font-size: 0.8rem; color: #666; margin-top: 2px; }
+        h2 { font-size: 1.2rem; font-weight: 700; margin: 5mm 0 3mm; padding-bottom: 2mm; border-bottom: 1px solid #ddd; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; margin-bottom: 5mm; }
+        .info-item { padding: 2mm 0; }
+        .info-item .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: #888; margin-bottom: 1mm; }
+        .info-item .value { font-size: 0.95rem; font-weight: 600; }
+        .desc-box { background: #f8f8f8; border: 1px solid #ddd; border-radius: 4px; padding: 3mm; font-size: 0.88rem; line-height: 1.5; margin-bottom: 5mm; }
+        .status-badge { display: inline-block; padding: 2mm 5mm; border-radius: 20px; font-size: 0.85rem; font-weight: 700; background: #f0ebff; color: #7C3AED; border: 1px solid #c4b5fd; }
+        .photos-row { display: flex; flex-wrap: wrap; gap: 3mm; margin-top: 3mm; }
+        .photos-row img { width: 40mm; height: 40mm; object-fit: cover; border: 1px solid #ddd; border-radius: 2mm; }
+        .footer { margin-top: 8mm; padding-top: 4mm; border-top: 1px solid #ddd; display: flex; justify-content: space-between; font-size: 0.72rem; color: #999; }
+        .no-print { margin-bottom: 5mm; }
+        @media print {
+            .no-print { display: none; }
+            body { padding: 10mm; }
+        }
+    </style>
+</head>
+<body>
+<div class="no-print">
+    <button onclick="window.print()" style="background:#7C3AED;color:white;border:none;padding:8px 20px;border-radius:6px;font-size:0.9rem;cursor:pointer;font-family:inherit;font-weight:700;">
+        🖨 Распечатать
+    </button>
+    <a href="/admin/request/{{ req.id }}" style="margin-left:10px;color:#666;font-size:0.88rem;">← Назад</a>
+</div>
+
+<div class="print-header">
+    <div class="print-logo">◈ <span>3D</span>PRINT</div>
+    <div class="print-meta">
+        <div class="print-ticket">{{ req.ticket_number }}</div>
+        <div class="print-date">{{ req.created_at.strftime('%d.%m.%Y %H:%M') }}</div>
+        <div style="margin-top:3px;"><span class="status-badge">{{ req.status }}</span></div>
+    </div>
+</div>
+
+<h2>Контактные данные</h2>
+<div class="info-grid">
+    <div class="info-item"><div class="label">Фамилия</div><div class="value">{{ req.last_name }}</div></div>
+    <div class="info-item"><div class="label">Имя</div><div class="value">{{ req.first_name }}</div></div>
+    <div class="info-item"><div class="label">Телефон</div><div class="value" style="font-family:'JetBrains Mono',monospace;">{{ req.phone }}</div></div>
+</div>
+
+<h2>Параметры детали</h2>
+<div class="info-grid">
+    {% if req.length %}
+    <div class="info-item"><div class="label">Размеры</div><div class="value">{{ req.length }} × {{ req.width }} × {{ req.height }} мм</div></div>
+    {% endif %}
+    <div class="info-item"><div class="label">Материал</div><div class="value">{{ req.material or '—' }}</div></div>
+    <div class="info-item"><div class="label">Цвет</div><div class="value">{{ req.color or '—' }}</div></div>
+    <div class="info-item"><div class="label">Количество</div><div class="value">{{ req.quantity }} шт.</div></div>
+</div>
+
+{% if req.description %}
+<h2>Комментарий</h2>
+<div class="desc-box">{{ req.description }}</div>
+{% endif %}
+
+{% if photos %}
+<h2>Фотографии ({{ photos|length }})</h2>
+<div class="photos-row">
+    {% for f in photos %}
+    <img src="/uploads/photos/{{ f.filename }}" alt="{{ f.original_name }}">
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="footer">
+    <span>3DPrint — Сервис заявок на 3D печать</span>
+    <span>Распечатано: {{ req.created_at.strftime('%d.%m.%Y') }}</span>
+</div>
+</body>
+</html>

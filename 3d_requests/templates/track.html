@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}Отследить заявку{% endblock %}
+{% block extra_css %}
+<style>
+.track-wrap { max-width: 600px; margin: 3rem auto; padding: 0 1.5rem; }
+.track-wrap h1 { font-size: 2rem; font-weight: 900; margin-bottom: 0.5rem; }
+.track-wrap > p { color: var(--text-dim); margin-bottom: 2rem; }
+.search-row {
+    display: flex;
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+}
+.search-row input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 1rem;
+    outline: none;
+    transition: border 0.2s;
+}
+.search-row input:focus { border-color: var(--accent); }
+.result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+}
+.result-header {
+    background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(0,212,255,0.1));
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+}
+.result-ticket { font-family: var(--mono); font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+.result-body { padding: 1.5rem; }
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+}
+.info-row:last-child { border-bottom: none; }
+.info-row .key { color: var(--text-dim); }
+.info-row .val { font-weight: 600; text-align: right; }
+.status-badge {
+    display: inline-block;
+    padding: 0.3rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-family: var(--mono);
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="track-wrap">
+    <h1>🔍 Отследить заявку</h1>
+    <p>Введите номер заявки, который был выдан при оформлении</p>
+
+    <form method="POST" class="search-row">
+        <input type="text" name="ticket" placeholder="3D-202506-XXXXXX"
+               value="{{ request.form.get('ticket', '') }}" style="font-family:var(--mono)">
+        <button type="submit" class="btn btn-primary">Найти</button>
+    </form>
+
+    {% if req %}
+    <div class="result-card">
+        <div class="result-header">
+            <div class="result-ticket">{{ req.ticket_number }}</div>
+            {% set sc = {'Новая':'#6C63FF','В работе':'#F59E0B','Готово':'#10B981','Отменена':'#EF4444'} %}
+            <span class="status-badge" style="background:{{ sc.get(req.status,'#666') }}22;color:{{ sc.get(req.status,'#aaa') }};border:1px solid {{ sc.get(req.status,'#666') }}44;">
+                {{ req.status }}
+            </span>
+        </div>
+        <div class="result-body">
+            <div class="info-row">
+                <span class="key">Клиент</span>
+                <span class="val">{{ req.first_name }} {{ req.last_name[0] }}.</span>
+            </div>
+            <div class="info-row">
+                <span class="key">Телефон</span>
+                <span class="val">{{ mask_phone(req.phone) }}</span>
+            </div>
+            {% if req.material %}
+            <div class="info-row">
+                <span class="key">Материал</span>
+                <span class="val">{{ req.material }}</span>
+            </div>
+            {% endif %}
+            {% if req.length %}
+            <div class="info-row">
+                <span class="key">Размеры</span>
+                <span class="val">{{ req.length }}×{{ req.width }}×{{ req.height }} мм</span>
+            </div>
+            {% endif %}
+            <div class="info-row">
+                <span class="key">Количество</span>
+                <span class="val">{{ req.quantity }} шт.</span>
+            </div>
+            <div class="info-row">
+                <span class="key">Дата подачи</span>
+                <span class="val">{{ req.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
