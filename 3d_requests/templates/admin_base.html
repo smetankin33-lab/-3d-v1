@@ -206,6 +206,8 @@
     <a href="/admin?status=Новая">🆕 Новые</a>
     <a href="/admin?status=В работе">⚙️ В работе</a>
     <a href="/admin?status=Готово">✅ Готово</a>
+    <div class="sidebar-label" style="margin-top:1.5rem;">Настройки</div>
+    <a href="/admin/materials" class="{{ 'active' if request.path == '/admin/materials' else '' }}">🧱 Материалы</a>
     <div class="sidebar-spacer"></div>
     <div class="sidebar-user">
         <strong>{{ session.get('admin_name', 'admin') }}</strong>

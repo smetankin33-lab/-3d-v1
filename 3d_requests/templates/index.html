@@ -247,21 +247,9 @@
                 <label>Материал</label>
                 <select name="material">
                     <option value="">— выберите —</option>
-                    <option>ABS</option>
-                    <option>ASA</option>
-                    <option>Carbon</option>
-                    <option>ESD-Safe</option>
-                    <option>Fiberglass-Filled</option>
-                    <option>HIPS</option>
-                    <option>PA</option>
-                    <option>PA/CF</option>
-                    <option>PC</option>
-                    <option>PEEK</option>
-                    <option>PETG</option>
-                    <option>PLA</option>
-                    <option>PPSU</option>
-                    <option>TPU</option>
-                    <option>ULTEM</option>
+                    {% for mat in materials %}
+                    <option value="{{ mat.name }}">{{ mat.name }}</option>
+                    {% endfor %}
                 </select>
             </div>
 
