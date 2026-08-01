@@ -75,6 +75,16 @@ class UploadedFile(db.Model):
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class Material(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    available = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Material {self.name}>'
+
+
 # ─── ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ────────────────────────────────────────────────
 def allowed_photo(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_PHOTOS
@@ -110,7 +120,8 @@ STATUS_COLORS = {
 # ─── МАРШРУТЫ — ПУБЛИЧНАЯ ЧАСТЬ ─────────────────────────────────────────────
 @app.route('/', methods=['GET'])
 def index():
-    return render_template('index.html')
+    materials = Material.query.filter_by(available=True).order_by(Material.name).all()
+    return render_template('index.html', materials=materials)
 
 
 @app.route('/submit', methods=['POST'])
@@ -285,6 +296,54 @@ def print_request(req_id):
     return render_template('print_view.html', req=req, photos=photos)
 
 
+@app.route('/admin/materials')
+@login_required
+def admin_materials():
+    materials = Material.query.order_by(Material.name).all()
+    return render_template('admin_materials.html', materials=materials)
+
+
+@app.route('/admin/materials/toggle/<int:mat_id>', methods=['POST'])
+@login_required
+def toggle_material(mat_id):
+    material = Material.query.get_or_404(mat_id)
+    material.available = not material.available
+    db.session.commit()
+    status = 'доступен' if material.available else 'недоступен'
+    flash(f'Материал "{material.name}" теперь {status}', 'success')
+    return redirect(url_for('admin_materials'))
+
+
+@app.route('/admin/materials/add', methods=['POST'])
+@login_required
+def add_material():
+    name = request.form.get('name', '').strip()
+    if not name:
+        flash('Введите название материала', 'error')
+        return redirect(url_for('admin_materials'))
+    
+    existing = Material.query.filter_by(name=name).first()
+    if existing:
+        flash(f'Материал "{name}" уже существует', 'error')
+        return redirect(url_for('admin_materials'))
+    
+    new_mat = Material(name=name, available=True)
+    db.session.add(new_mat)
+    db.session.commit()
+    flash(f'Материал "{name}" добавлен', 'success')
+    return redirect(url_for('admin_materials'))
+
+
+@app.route('/admin/materials/delete/<int:mat_id>', methods=['POST'])
+@login_required
+def delete_material(mat_id):
+    material = Material.query.get_or_404(mat_id)
+    db.session.delete(material)
+    db.session.commit()
+    flash(f'Материал "{material.name}" удалён', 'success')
+    return redirect(url_for('admin_materials'))
+
+
 @app.route('/uploads/<path:filepath>')
 @login_required
 def serve_upload(filepath):
@@ -301,6 +360,15 @@ def init_db():
             admin = Admin(username='admin')
             admin.set_password('Admin123!')
             db.session.add(admin)
+            # Добавляем стандартные материалы
+            default_materials = [
+                'ABS', 'ASA', 'Carbon', 'ESD-Safe', 'Fiberglass-Filled',
+                'HIPS', 'PA', 'PA/CF', 'PC', 'PEEK', 'PETG', 'PLA',
+                'PPSU', 'TPU', 'ULTEM'
+            ]
+            for mat_name in default_materials:
+                if not Material.query.filter_by(name=mat_name).first():
+                    db.session.add(Material(name=mat_name, available=True))
             db.session.commit()
             print("=" * 50)
             print("  Администратор создан:")

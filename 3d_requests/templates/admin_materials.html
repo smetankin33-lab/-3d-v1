@@ -1,0 +1,106 @@
+{% extends 'admin_base.html' %}
+{% block title %}Материалы{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Управление материалами</h1>
+    <div class="header-actions">
+        <a href="/admin" class="btn btn-ghost" style="font-size:0.85rem;">← Назад к заявкам</a>
+    </div>
+</div>
+
+<!-- Статистика -->
+<div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="stat-card">
+        <div class="stat-num">{{ materials|length }}</div>
+        <div class="stat-label">Всего материалов</div>
+    </div>
+    <div class="stat-card" style="border-color: rgba(16,185,129,0.3);">
+        <div class="stat-num" style="color:#10B981;">{{ materials|selectattr('available')|list|length }}</div>
+        <div class="stat-label">Доступно</div>
+    </div>
+    <div class="stat-card" style="border-color: rgba(239,68,68,0.3);">
+        <div class="stat-num" style="color:#EF4444;">{{ materials|rejectattr('available')|list|length }}</div>
+        <div class="stat-label">Недоступно</div>
+    </div>
+</div>
+
+<!-- Добавить материал -->
+<div class="form-section" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;">
+    <div class="section-title" style="margin-bottom:1rem;">➕ Добавить новый материал</div>
+    <form method="POST" action="/admin/materials/add" style="display:flex; gap:1rem; align-items:flex-end;">
+        <div class="field" style="flex:1;">
+            <label>Название материала</label>
+            <input type="text" name="name" placeholder="Например: PLA Plus" required maxlength="100" 
+                   style="background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:0.65rem 1rem; color:var(--text); font-family:var(--font); font-size:0.95rem; width:100%;">
+        </div>
+        <button type="submit" class="btn btn-primary">Добавить</button>
+    </form>
+</div>
+
+<!-- Список материалов -->
+<div class="table-wrap">
+<table class="req-table">
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>Статус</th>
+            <th>Дата добавления</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for mat in materials %}
+    <tr>
+        <td><strong style="color:var(--text);">{{ mat.name }}</strong></td>
+        <td>
+            {% if mat.available %}
+            <span class="badge" style="background:rgba(16,185,129,0.15); color:#10B981; border:1px solid rgba(16,185,129,0.3);">
+                ✓ Доступен
+            </span>
+            {% else %}
+            <span class="badge" style="background:rgba(239,68,68,0.15); color:#EF4444; border:1px solid rgba(239,68,68,0.3);">
+                ✗ Недоступен
+            </span>
+            {% endif %}
+        </td>
+        <td class="date-cell">{{ mat.created_at.strftime('%d.%m.%Y') }}<br>
+            <small>{{ mat.created_at.strftime('%H:%M') }}</small></td>
+        <td>
+            <form method="POST" action="/admin/materials/toggle/{{ mat.id }}" style="display:inline;">
+                <button type="submit" class="btn {% if mat.available %}btn-warn{% else %}btn-ok{% endif %}" 
+                        style="padding:0.3rem 0.8rem; font-size:0.8rem;">
+                    {% if mat.available %}Скрыть{% else %}Показать{% endif %}
+                </button>
+            </form>
+            <form method="POST" action="/admin/materials/delete/{{ mat.id }}" style="display:inline;" 
+                  onsubmit="return confirm('Удалить материал «{{ mat.name }}»? Это действие нельзя отменить.');">
+                <button type="submit" class="btn btn-danger" style="padding:0.3rem 0.8rem; font-size:0.8rem;">
+                    Удалить
+                </button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+
+{% if not materials %}
+<div class="empty-state" style="margin-top:2rem;">
+    <div style="font-size:3rem;margin-bottom:1rem;">📦</div>
+    <h3>Нет материалов</h3>
+    <p>Добавьте первый материал для начала работы</p>
+</div>
+{% endif %}
+
+<style>
+.form-section .field input {
+    outline: none;
+    transition: all 0.2s;
+}
+.form-section .field input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,212,255,0.1);
+}
+</style>
+{% endblock %}
