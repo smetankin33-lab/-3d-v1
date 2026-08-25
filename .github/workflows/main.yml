@@ -1,37 +1,20 @@
-name: CI
+name: PEP 8 Check
 
 on: [push, pull_request]
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.9", "3.10"]
-
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
 
-    - name: Install dependencies
-      run: |
-        pip install -r ./3d_requests/requirements.txt
-        pip install pytest pytest-cov
+      - name: Install flake8
+        run: pip install flake8
 
-    - name: Run basic tests
-      run: |
-        pytest tests/test_basic.py -v
-
-    - name: Run with coverage
-      run: |
-        pytest tests/ --cov=src --cov-report=xml
-
-    - name: Upload coverage
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
+      - name: Run flake8
+        run: flake8 .
