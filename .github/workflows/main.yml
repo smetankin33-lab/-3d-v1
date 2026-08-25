@@ -29,7 +29,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r 3d_request/requirements.txt # Убедись, что этот файл есть в репо, или удали эту строку
+        pip install -r ./3d_requests/requirements.txt # Убедись, что этот файл есть в репо, или удали эту строку
 
     # 4. Запускаем тесты или линтер (пример для pytest или flake8)
     - name: Run tests
