@@ -1,38 +1,56 @@
-# .github/workflows/ci.yml
+name: CI Pipeline
 
-name: CI Pipeline # Название процесса, которое будет видно на GitHub
-
-# Триггеры: когда запускать этот процесс
 on:
   push:
-    branches: [ "main", "master" ] # Запускать при пуше в main или master
+    branches: [ "main", "master" ]
   pull_request:
-    branches: [ "main", "master" ] # Запускать при создании пул-реквеста
+    branches: [ "main", "master" ]
 
-# Задачи (Jobs)
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest # Операционная система виртуальной машины (ubuntu, windows, macos)
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11'] # Тестирование на нескольких версиях
 
     steps:
-    # 1. Скачиваем код репозитория
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # 2. Устанавливаем нужную версию языка (пример для Python 3.10)
-    - name: Set up Python
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip' # Кэширование зависимостей
 
-    # 3. Устанавливаем зависимости (пример для pip)
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r ./3d_requests/requirements.txt # Убедись, что этот файл есть в репо, или удали эту строку
+        pip install -r ./3d_requests/requirements.txt
+        pip install pytest pytest-cov flake8 black mypy
 
-    # 4. Запускаем тесты или линтер (пример для pytest или flake8)
-    - name: Run tests
+    - name: Lint with flake8
       run: |
-        pip install pytest
-        pytest # Или любая другая команда для проверки кода, например: python -m pytest
+        flake8 src/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 src/ tests/ --count --exit-zero --max-complexity=10 --statistics
+
+    - name: Check code formatting with black
+      run: black --check src/ tests/
+
+    - name: Type check with mypy
+      run: mypy src/ --ignore-missing-imports
+
+    - name: Run unit tests
+      run: |
+        pytest tests/unit/ -v --cov=src --cov-report=xml
+
+    - name: Run integration tests
+      run: |
+        pytest tests/integration/ -v --slow-tests
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false
